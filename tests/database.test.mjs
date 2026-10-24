@@ -1,0 +1,59 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {PGlite} from '@electric-sql/pglite';
+import {pgcrypto} from '@electric-sql/pglite/contrib/pgcrypto';
+const db=new PGlite({extensions:{pgcrypto}});
+await db.exec('create role anon; create role authenticated;');
+await db.exec(await readFile(new URL('../database/001_classroom.sql',import.meta.url),'utf8'));
+await db.query("insert into eco_private.teacher_settings values (1,extensions.crypt($1,extensions.gen_salt('bf')))",['test-only-password']);
+const rpc=async(action,payload={},token=null)=>(await db.query('select public.eco_classroom($1,$2::jsonb,$3) as result',[action,JSON.stringify(payload),token])).rows[0].result;
+const data={notes:{observe:'看到草蜢進食草。',arrow:'箭頭表示食物中的能量傳遞。',build:'草能製造養分。',fix:'箭頭由被吃的生物指向吃牠的生物。',sim:'青蛙減少，草蜢可能增加。','report-arrow':'箭頭由草指向兔，表示能量傳遞。','report-change':'兔減少，狐的食物減少，可能減少。'},answers:{observed:['grass','grasshopper','frog','snake'],'match-grasshopper':'grass','match-frog':'grasshopper','match-snake':'frog','arrow-0':'right','arrow-1':'left','arrow-2':'right','build-0':{slots:['grass','grasshopper','frog'],dirs:[1,1]},'build-1':{slots:['grass','grasshopper','frog','snake'],dirs:[1,1,1]},'fix-0':[1,1],'fix-1':'grass','fix-2':'swap','predict-grass':'down','predict-grasshopper':'up','predict-snake':'down',simRevealed:true,'report-chain':{slots:['grass','rabbit','fox'],dirs:[1,1]},confidence:'我能獨立解釋'}};
+test('Supabase migration: locks, permissions, complete journey and readback',async()=>{
+ assert.equal((await rpc('health')).database,'supabase');
+ for(const [className,number] of [['4D',1],['4A',26],['4A',0],['4A',1.2],['4A','1'],[null,1]])assert.ok((await rpc('student-login',{className,number})).error);
+ assert.ok((await rpc('teacher-overview')).error);
+ assert.ok((await rpc('teacher-login',{password:'wrong'})).error);
+ const teacher=(await rpc('teacher-login',{password:'test-only-password'})).token;
+ const t=(await rpc('student-login',{className:'4a',number:1})).token;
+ assert.equal(t.length,64);
+ assert.ok((await rpc('teacher-overview',{},t)).error);
+ assert.ok((await rpc('student-progress',{},teacher)).error);
+ assert.ok((await rpc('student-complete',{stage:5,data},t)).error);
+ assert.ok((await rpc('student-complete',{stage:0,data:{}},t)).missing.length);
+ assert.ok((await rpc('student-complete',{stage:null,data},t)).error);
+ await rpc('student-save',{stage:0,data},t);
+ let progress=await rpc('student-progress',{},t);
+ assert.equal(progress.completed,0);
+ assert.equal(progress.data.answers['arrow-0'],undefined,'future answers cannot be uploaded early');
+ for(let stage=0;stage<6;stage++){
+  const r=await rpc('student-complete',{stage,data},t);
+  assert.equal(r.completed,stage+1,JSON.stringify(r));
+ }
+ const resumed=await rpc('student-login',{className:'4A',number:1});
+ assert.equal(resumed.completed,6);
+ assert.equal(resumed.data.notes['report-change'],data.notes['report-change']);
+ const other=await rpc('student-login',{className:'4B',number:1});
+ assert.equal(other.completed,0);
+ assert.deepEqual(other.data.notes,{});
+ const overview=await rpc('teacher-overview',{},teacher);
+ assert.equal(overview.students.find(x=>x.class_name==='4A').completed,6);
+ const detail=await rpc('teacher-student',{id:'4A-1'},teacher);
+ assert.equal(detail.data.notes.sim,data.notes.sim);
+ assert.equal((await rpc('student-complete',{stage:5,data},t)).completed,6,'repeat submission is idempotent');
+ await rpc('teacher-logout',{},teacher);
+ assert.ok((await rpc('teacher-overview',{},teacher)).error);
+});
+test('anonymous role can use validated RPC but cannot read private records',async()=>{
+ await db.exec('set role anon');
+ assert.equal((await rpc('health')).ok,true);
+ await assert.rejects(db.query('select * from eco_private.learners'),/permission denied/);
+ await assert.rejects(db.query('select * from eco_private.sessions'),/permission denied/);
+ await assert.rejects(db.query('select * from eco_private.teacher_settings'),/permission denied/);
+ await assert.rejects(db.query("select eco_private.requirements(0,'{}'::jsonb)"),/permission denied/);
+ await db.exec('reset role');
+});
+test('teacher password retries persist and limit guessing',async()=>{
+ for(let i=0;i<8;i++)assert.match((await rpc('teacher-login',{password:'wrong'})).error,/不正確/);
+ assert.match((await rpc('teacher-login',{password:'test-only-password'})).error,/15分鐘/);
+});
