@@ -21,3 +21,12 @@
 `assets/world-map.webp` 由內建 ImageGen 製作，再作網頁格式壓縮。提示：Japanese watercolor and gouache ecological exploration island on ivory paper; sunny meadow, temperate woodland observation hut, turquoise seashore, small research sailboat and winding path; moss green, teal and ochre; no text, labels, arrows or diagrams。生態地圖只作裝飾；箭頭與任務由程式繪製。
 
 食性參考：NOAA Aquatic Food Webs、NParks Food Chains and Food Webs Basics、RSPB藍山雀及雀鷹資料、Woodland Trust Blue Tit。完整連結見學生遊戲手冊。
+
+## 3D grassland experiment island
+`island/` unlocks after the first four meadow missions. It uses local bundled Three.js 0.180.0 (MIT) with a CPU triangle-projection fallback when WebGL is unavailable; no CDN/runtime ChatGPT dependency. Drag/orbit, zoom, reset view, comparison island, energy arrows, reduced decorative motion. Scene animals represent groups; their walking is decorative rather than individual predator agents.
+
+Model `island/model.mjs` is a deterministic four-population ODE using RK4 with dt=0.1. Normalised equilibrium [1,1,1,1], logistic producer growth, trophic consumption/growth and density dependence. Baseline [100,40,16,6] is pedagogical, not field data. Time units are arbitrary. Simulation allows one 25/50/80% removal at t=0, runs to 60, pauses at 20 for prediction comparison (within ±2% labelled approximately unchanged), and can exhibit recovery/reversals rather than a fixed cascade. UI explicitly states these assumptions. Compare starts from identical conditions. Control remains at analytical equilibrium.
+
+At t>=20 students explain and submit, storing the last six reports under existing stage 4 `data.simulations` via the protected Supabase RPC. First four mission gate is checked before opening; server existing stage gate also applies. Teacher stage4 detail reads predictions, explanation and sampled trajectory. Existing stage4 answers preserved when saving. Device drafts are separate per seat and recover on reload; explicit submission required. Reports are observations for teacher review, not automatic grades. One report is updated on resubmit, new runs have new IDs. Supports CSV time-series export. No schema/permission changes.
+
+Build local bundle: `node_modules/.bin/esbuild expedition/island/scene-src.js --bundle --format=esm --minify --outfile=expedition/island/scene.js --legal-comments=linked`. Ship scene.js, its legal comments and THREE-LICENSE.txt together. Model tests: `node --test tests/island.test.mjs`.
