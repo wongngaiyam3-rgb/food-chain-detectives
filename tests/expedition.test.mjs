@@ -2,13 +2,13 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 const db=new PGlite({extensions:{pgcrypto}});await db.exec('create role anon;create role authenticated;');await db.exec(await readFile(new URL('../database/001_classroom.sql',import.meta.url),'utf8'));await db.exec(await readFile(new URL('../database/expedition-schema.sql',import.meta.url),'utf8'));await db.query("insert into eco_private.teacher_settings values(1,extensions.crypt($1,extensions.gen_salt('bf')))",['test-only-password']);
 const auth=async(a,p={})=>(await db.query('select public.eco_classroom($1,$2::jsonb) as r',[a,JSON.stringify(p)])).rows[0].r;
 const rpc=async(a,p={},t=null)=>(await db.query('select public.eco_expedition($1,$2::jsonb,$3) as r',[a,JSON.stringify(p),t])).rows[0].r;
-const fixtures=[{observed:[0,1,2,3]},{prey:[0,1,2]},{order:[0,1,2,3],dirs:[1,1,1],note:'能量由被吃的生物傳給進食者。'},{fixDirs:[1,1,1],reason:'energy'},{prediction:['up','unknown'],revealed:true,note:'我原本預測增加，模型顯示食物減少，可能減少。'}];
+const fixtures=[{observed:[0,1,2,3]},{prey:[0,1,2]},{order:[0,1,2,3],dirs:[1,1,1]},{fixDirs:[1,1,1],reason:'energy'},{prediction:['up','unknown'],revealed:true}];
 test('15 sequential missions, museum, retries, hints, first answers and role isolation',async()=>{const t=(await auth('student-login',{className:'4C',number:25})).token,teacher=(await auth('teacher-login',{password:'test-only-password'})).token;
  assert.ok((await rpc('overview',{},t)).error);assert.ok((await rpc('progress')).error);assert.ok((await rpc('progress',{},teacher)).error);
  await rpc('progress',{},t);assert.ok((await rpc('submit',{stage:5,data:fixtures[0]},t)).error);
  for(let st=0;st<15;st++){if(st===1){await rpc('hint',{stage:st},t);const wrong=await rpc('submit',{stage:st,data:{prey:[3,3,3]}},t);assert.equal(wrong.progress.records['1'].first_correct,false);assert.equal(wrong.progress.completed,1);}
  const result=await rpc('submit',{stage:st,data:fixtures[st%5]},t);assert.equal(result.completed,st+1,JSON.stringify(result));}
- const work={biome:2,order:[0,1,2,3],dirs:[1,1,1],explanation:'浮游植物製造養分，能量沿食物關係傳遞。',change:'生產者減少，後面生物的食物減少，數量可能減少。',confidence:'我能獨立解釋'};
+ const work={biome:2,order:[0,1,2,3],dirs:[1,1,1],confidence:'我能獨立解釋'};
  assert.ok((await rpc('submit',{stage:15,data:{}},t)).error);let r=await rpc('submit',{stage:15,data:work},t);assert.equal(r.completed,16);assert.equal(r.records['1'].attempts,2);assert.equal(r.records['1'].hints,1);assert.deepEqual(r.records['1'].first_data.prey,[3,3,3]);
  const t2=(await auth('student-login',{className:'4C',number:25})).token;assert.equal((await rpc('progress',{},t2)).completed,16);
  const other=(await auth('student-login',{className:'4A',number:1})).token;assert.equal((await rpc('progress',{},other)).completed,0);

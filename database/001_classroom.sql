@@ -62,11 +62,7 @@ begin
  else return array['關卡錯誤'];
  end case;
  if not coalesce(ok,false) then missing:=array_append(missing,'完成本關所有客觀操作'); end if;
- foreach k in array needed loop
-  if jsonb_typeof(n->k) is distinct from 'string' or length(trim(n->>k))<2 then
-   missing:=array_append(missing,'填寫本關的發現與理由');
-  end if;
- end loop;
+
  return missing;
 end $$;
 revoke all on function eco_private.requirements(integer,jsonb) from public,anon,authenticated;

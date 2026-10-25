@@ -55,24 +55,22 @@ begin
    mode:=st%5;
    if st=15 then
     ok:=jsonb_typeof(d->'biome')='number' and d->>'biome' in ('0','1','2') and d->'order'='[0,1,2,3]'::jsonb and d->'dirs'='[1,1,1]'::jsonb
-     and jsonb_typeof(d->'explanation')='string' and length(trim(d->>'explanation'))>=6
-     and jsonb_typeof(d->'change')='string' and length(trim(d->>'change'))>=6
      and d->>'confidence' in ('我能獨立解釋','我能在提示下解釋','我還想再練習');
-    msg:='請完成正確食物鏈、兩項至少6字的解釋及自我檢視。';
+    msg:='請完成正確食物鏈及自我檢視。';
    elsif mode=0 then
     ok:=d->'observed' @> '[0,1,2,3]'::jsonb; msg:='請先點選並觀察四種生物。';
    elsif mode=1 then
     ok:=d->'prey'='[0,1,2]'::jsonb; msg:='食物配對尚未全部正確，請參考食性資料卡再試。';
    elsif mode=2 then
-    ok:=d->'order'='[0,1,2,3]'::jsonb and d->'dirs'='[1,1,1]'::jsonb and jsonb_typeof(d->'note')='string' and length(trim(d->>'note'))>=6;
-    msg:='請核對四種生物的次序、三個箭頭，並填寫至少6字的排列與箭頭解釋。';
+    ok:=d->'order'='[0,1,2,3]'::jsonb and d->'dirs'='[1,1,1]'::jsonb;
+    msg:='請核對四種生物的次序及三個箭頭。';
    elsif mode=3 then
     ok:=d->'fixDirs'='[1,1,1]'::jsonb and d->>'reason'='energy'; msg:='請修正三個箭頭，並選出能量傳遞的理由。';
    else
     ok:=jsonb_typeof(d->'prediction')='array' and jsonb_array_length(case when jsonb_typeof(d->'prediction')='array' then d->'prediction' else '[]'::jsonb end)=2
      and d#>>'{prediction,0}' in ('up','down','same','unknown') and d#>>'{prediction,1}' in ('up','down','same','unknown')
-     and d->'revealed'='true'::jsonb and jsonb_typeof(d->'note')='string' and length(trim(d->>'note'))>=6;
-    msg:='請為兩種生物作預測、查看模型，再填寫至少6字的比較與原因。';
+     and d->'revealed'='true'::jsonb;
+    msg:='請為兩種生物作預測，並查看模型。';
    end if;
    entry:=jsonb_set(entry,'{last_correct}',to_jsonb(coalesce(ok,false)),true);
    if not(entry ? 'first_correct') then entry:=jsonb_set(entry,'{first_correct}',to_jsonb(coalesce(ok,false)),true); end if;

@@ -33,6 +33,7 @@ test('Supabase migration: locks, permissions, complete journey and readback',asy
  const resumed=await rpc('student-login',{className:'4A',number:1});
  assert.equal(resumed.completed,6);
  assert.equal(resumed.data.notes['report-change'],data.notes['report-change']);
+ const noText=(await rpc('student-login',{className:'4B',number:2})).token;for(let stage=0;stage<6;stage++)assert.equal((await rpc('student-complete',{stage,data:{answers:data.answers,notes:{}}},noText)).completed,stage+1);
  const other=await rpc('student-login',{className:'4B',number:1});
  assert.equal(other.completed,0);
  assert.deepEqual(other.data.notes,{});
