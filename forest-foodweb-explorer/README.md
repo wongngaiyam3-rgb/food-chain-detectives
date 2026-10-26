@@ -1,32 +1,39 @@
-# 森間探險 · 森林食物鏈（原版移植）
+# 森間探險 · 森林食物鏈（13 種生物動態版）
 
-原始網站：<https://forest-foodweb-explorer.validkoi14.chatgpt.site/>
+- [開啟 GitHub Pages 遊戲](https://wongngaiyam3-rgb.github.io/food-chain-detectives/forest-foodweb-explorer/)
+- [原始森林探索網站](https://forest-foodweb-explorer.validkoi14.chatgpt.site/)
+- [原始 ZIP 原始碼來源](https://forest-foodweb-explorer.validkoi14.chatgpt.site/forest-source.zip)
 
-GitHub Pages：<https://wongngaiyam3-rgb.github.io/food-chain-detectives/forest-foodweb-explorer/>
+本資料夾是在原版「森間探險」網頁基礎上修改的香港小四食物鏈互動教學版本，保留自由探索、觀察圖鑑、食物鏈檢查、食物網、觸控搖桿和本機進度紀錄。
 
-本資料夾移植自原始網站提供的 [forest-source.zip](https://forest-foodweb-explorer.validkoi14.chatgpt.site/forest-source.zip)，以原版 HTML、CSS、探索與互動操作為基礎，按教學要求修改物種資料及食物鏈。並非先前另行重製的森林模擬器。
+## 生物（2 種植物 + 11 種動物）
 
-## 使用方式
+- 生產者：橡樹、禾草
+- 消費者：毛毛蟲、蚱蜢、青蛙、草蛇、林鼠、兔子、知更鳥、赤狐、松鼠、蝸牛、灰林鴞
+- 已移除分解者及分解路徑教學活動
 
-直接以 HTTPS 網址開啟；建議用 iPad 橫向 Safari。目前包括 3D 森林、2 種植物（橡樹、禾草）、8 種動物（毛毛蟲、蚱蜢、青蛙、草蛇、林鼠、兔子、知更鳥、赤狐）、近距離觀察、圖鑑、食物鏈判定與本機進度保存。已移除分解者與分解路徑。無需伺服器或付費 AI API。
+食物鏈例子：
+- 禾草 → 蚱蜢 → 青蛙 → 草蛇
+- 禾草 → 兔子 → 赤狐
+- 禾草 → 蝸牛 → 知更鳥
+- 橡樹 → 毛毛蟲 → 知更鳥
+- 橡樹 → 林鼠 → 灰林鴞
+- 橡樹 → 松鼠 → 赤狐
 
-## 兩處 GitHub Pages 相容處理
+## 動物自動移動與美術
 
-1. 原始 `app.js` 內的 `./vendor/three.module.js` 改為固定版本的 [Three.js r170](https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js) URL，避免在 GitHub 重複存放 1.3 MB 的第三方供應商程式。功能及主版本不變；首次載入需能連線 jsDelivr。
-2. 幫助視窗的「下載網站原始檔」連結改為原始網站提供的 ZIP 絕對網址。
+十一種動物各有獨立的自動移動控制，會在原棲息範圍內選擇新位置、轉向、停頓並繞過樹木及池塘。特徵動作包括兔子和青蛙跳躍、草蛇擺動、松鼠尾巴擺動、蝸牛及毛毛蟲緩慢爬行、知更鳥小跳和灰林鴞振翅飛行。
 
-此外，因教學範圍調整，`index.html` 更新物種數量，`data.js` 調整物種及取食連結，`app.js` 新增青蛙及草蛇 3D 模型、移除分解活動並使圖鑑進度依實際物種總數計算；`style.css` 與 `proximity.js` 保持原版。此倉庫所提供的完整程式包括 `app.js`，可以進一步修改和擴充。
+模型是**程式生成的卡通立體模型**，不是照片貼圖或外部下載的 GLB。新版增加各種動物的毛色分區、眼睛、耳朵、足部、尾巴、羽翼及外殼細節，維持網站毋須額外大型模型檔案。圖鑑進度按實際物種數目顯示為 0/13 至 13/13。動物會移動，所以圖鑑的「前往附近」會追蹤目前位置。
 
-## 教學提示
+## 部署與相容性
 
-本遊戲是溫帶林緣的**簡化教學食物網**，非真實生態系統精確模擬。進度存於瀏覽器的 localStorage，不會自動跨裝置同步。Three.js 使用 MIT 授權，詳見 [THREE-LICENSE.txt](vendor/THREE-LICENSE.txt)。原始 3D 功能需瀏覽器支援 WebGL，裝置不支援時會嘗試原版相容模式。
+所有檔案均可直接以 GitHub Pages 靜態主機託管，不需要 npm、雲端資料庫或付費 API。Three.js r170 從固定版本的 jsDelivr CDN 載入，需有網絡連線。建議使用更新版 Safari / Chrome，iPad 建議橫向操作；不支援 WebGL 的裝置會啟用原版 2D 相容模式（非完整 3D）。
 
-## 本次調整（小四食物鏈）
+瀏覽器 localStorage 保存探索資料；移除的物種或已失效的舊食物鏈會在載入時被過濾，進度只屬於該瀏覽器，不會自動跨裝置同步。
 
-- **生產者（2）**：橡樹、禾草。
-- **消費者（8）**：毛毛蟲、蚱蜢、青蛙、草蛇、林鼠、兔子、知更鳥、赤狐。
-- **刪除**：黑莓灌木、灰林鴞、蚯蚓、腐生真菌，以及分解路徑和相關過濾按鈕。
-- **食物鏈示例**：禾草 → 蚱蜢 → 青蛙 → 草蛇；禾草 → 兔子 → 赤狐；橡樹 → 毛毛蟲 → 知更鳥；橡樹 → 林鼠 → 赤狐。
-- **舊資料**：保存的探索紀錄只保留仍存在的物種；已不存在或不符合新食物關係的食物鏈不會載入。
+## 教學模型的界線
 
-本模型為課堂簡化食物網，箭頭從食物指向取食者。青蛙／草蛇是示意林緣近水環境的教學物種。
+此生態網係**簡化的溫帶森林林緣教學模型**，展示可能的取食關係，並不模擬實際物種數量或所有天敵。灰林鴞主要於夜間活動；遊戲中的日間飛行是為了提高可觀察性而作的示意。食物鏈箭頭由食物指向取食者，代表能量傳遞的方向。
+
+Three.js：MIT 授權，詳見 [vendor/THREE-LICENSE.txt](vendor/THREE-LICENSE.txt)。原網站內的原始 ZIP 保留可下載供對照，但不包含本改版新增的模型及動物移動程式碼；本倉庫的 `app.js`、`data.js` 才是最新版。
