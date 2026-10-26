@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f2f8ee">
+  <meta name="description" content="適合小學四年級的3D森林食物鏈生態模擬實驗：改變一種生物的數量，觀察其他生物怎樣變化。">
+  <title>森之平衡｜3D 生態實驗島</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">🌳</div>
+        <div><div class="brand-title">森之平衡 <span class="brand-tag">3D 生態實驗島</span></div><div class="brand-subtitle">小小生態學家的森林研究站</div></div>
+      </div>
+      <div class="top-actions"><span class="lesson-chip">🌱 小四科學・食物鏈</span><a class="back-link" href="../expedition/">返回食物鏈探險 <span aria-hidden="true">↗</span></a></div>
+    </header>
+
+    <section class="intro">
+      <div><div class="eyebrow">🍃 FOREST EXPLORER · EXPERIMENT 01</div>
+      <h1>森林裏，一個改變會帶來甚麼連鎖反應？</h1>
+      <p>先觀察，再作出預測！試試讓青蛙減少，看看森林裏其他生物會怎樣變化。</p></div>
+      <div class="intro-sticker" aria-hidden="true"><span>🐸</span><span>🦗</span><span>🐍</span></div>
+    </section>
+
+    <main class="dashboard">
+      <section class="scene-panel" aria-label="可旋轉的3D森林">
+        <div class="scene-toolbar"><span class="scene-badge"><span class="dot"></span> LIVE FOREST</span><span class="time-badge">⏳ 模擬時間 <strong id="monthDisplay">0.0</strong> 個月</span></div>
+        <div id="world" role="img" aria-label="立體卡通森林生態島，可用滑鼠拖曳旋轉或觸控旋轉，滾輪縮放。">
+          <div id="loading" class="loading"><div class="loading-leaf">🌿</div><strong>森林正在甦醒⋯</strong><small>載入 3D 生態島中</small></div>
+        </div>
+        <div class="scene-bottom">
+          <div class="camera-help">☝️ 拖曳旋轉森林 ・ ⤢ 滾輪縮放 ・ 點按動物看介紹</div>
+          <button id="cameraReset" class="round-btn" type="button" aria-label="重設視角" title="重設視角">◎</button>
+        </div>
+        <div class="species-strip" aria-label="目前生物數量指數">
+          <div class="species-tile" data-kind="grass"><div class="tile-icon">🌱</div><div class="tile-label">青草</div><div class="tile-number" id="valueGrass">72</div><div class="tile-delta" id="deltaGrass">—</div></div>
+          <div class="species-tile" data-kind="bug"><div class="tile-icon">🦗</div><div class="tile-label">蚱蜢</div><div class="tile-number" id="valueBug">45</div><div class="tile-delta" id="deltaBug">—</div></div>
+          <div class="species-tile" data-kind="frog"><div class="tile-icon">🐸</div><div class="tile-label">青蛙</div><div class="tile-number" id="valueFrog">32</div><div class="tile-delta" id="deltaFrog">—</div></div>
+          <div class="species-tile" data-kind="snake"><div class="tile-icon">🐍</div><div class="tile-label">蛇</div><div class="tile-number" id="valueSnake">18</div><div class="tile-delta" id="deltaSnake">—</div></div>
+        </div>
+        <div class="disclaimer">＊數字代表模擬數量指數，而非真實野外動物數量；生態變化經過簡化。</div>
+      </section>
+
+      <aside class="control-panel">
+        <div class="panel-heading"><span class="heading-icon">🔬</span><div><h2>生態實驗控制台</h2><p>成為森林研究員，改變一個條件</p></div></div>
+        <div class="chain-card">
+          <div class="card-mini-title">🌿 森林食物鏈</div>
+          <div class="food-chain" aria-label="青草被蚱蜢吃、蚱蜢被青蛙吃、青蛙被蛇吃"><span>🌱<small>青草</small></span><b>→</b><span>🦗<small>蚱蜢</small></span><b>→</b><span>🐸<small>青蛙</small></span><b>→</b><span>🐍<small>蛇</small></span></div>
+          <p>箭頭表示 <strong>能量由被吃的生物流向吃牠的生物</strong>。</p>
+        </div>
+
+        <div class="panel-section"><div class="section-label"><span class="step-circle">1</span><h3>先預測</h3><span class="soft-label">思考題</span></div>
+          <p class="section-copy">如果青蛙突然減少，<strong>蚱蜢</strong>的數量最可能怎樣變化？</p>
+          <div class="prediction-options" role="group" aria-label="預測蚱蜢數量變化">
+            <button class="predict-btn" data-answer="up" type="button">📈 增加</button>
+            <button class="predict-btn" data-answer="down" type="button">📉 減少</button>
+            <button class="predict-btn" data-answer="same" type="button">➖ 不變</button>
+          </div>
+          <div id="predictionStatus" class="prediction-status" aria-live="polite">請先選一個預測，再開始實驗！</div>
+        </div>
+
+        <div class="panel-section"><div class="section-label"><span class="step-circle">2</span><h3>改變森林</h3></div>
+          <button id="frogEvent" class="primary-action" type="button"><span class="primary-emoji">🐸</span><span><strong>青蛙減少一半</strong><small>觀察蝴蝶效應般的連鎖變化</small></span><span class="primary-arrow">↗</span></button>
+          <div class="extra-actions">
+            <button id="bugEvent" type="button">🦗 蚱蜢增加</button>
+            <button id="grassEvent" type="button">🌱 青草減少</button>
+            <button id="snakeEvent" type="button">🐍 蛇減少</button>
+          </div>
+          <div id="experimentStatus" class="experiment-status" aria-live="polite">森林目前處於自然平衡狀態。</div>
+        </div>
+
+        <div class="panel-section"><div class="section-label"><span class="step-circle">3</span><h3>推進時間</h3></div>
+          <div class="transport-row">
+            <button id="togglePlay" type="button" class="transport-main">⏸ 暫停</button>
+            <button id="stepTime" type="button" class="transport-secondary" title="向前推進一個月">⏭ +1 個月</button>
+            <button id="resetSim" type="button" class="transport-secondary" title="從頭開始實驗">↺ 重設</button>
+          </div>
+          <div class="speed-row"><span>模擬速度</span><div class="speed-buttons" role="group" aria-label="模擬速度"><button class="speed-btn selected" data-speed="1" type="button" aria-pressed="true">1×</button><button class="speed-btn" data-speed="2" type="button" aria-pressed="false">2×</button><button class="speed-btn" data-speed="4" type="button" aria-pressed="false">4×</button></div></div>
+        </div>
+      </aside>
+
+      <section class="analysis-panel">
+        <div class="analysis-header"><div><span class="eyebrow">📊 ECOSYSTEM DATA</span><h2>生態變化觀察站</h2><p>觀察四種生物數量的變化，與沒有干預的森林比較。</p></div><label class="compare-toggle"><input id="showReference" type="checkbox"><span class="switch"></span>顯示對照組</label></div>
+        <div class="chart-legend"><span><i class="legend-color grass"></i>青草</span><span><i class="legend-color bug"></i>蚱蜢</span><span><i class="legend-color frog"></i>青蛙</span><span><i class="legend-color snake"></i>蛇</span></div>
+        <div class="chart-wrap"><canvas id="populationChart" aria-label="四種生物數量指數隨月份變化的折線圖"></canvas></div>
+        <div class="insight" id="insight"><span class="insight-icon">💡</span><div><strong>觀察小提示</strong><p id="insightText">先作出預測，然後按「青蛙減少一半」。試着找出最先發生變化的生物。</p></div></div>
+        <div class="reflection"><span>🎯 小小科學家挑戰</span><p>除了蚱蜢，青草和蛇的數量可能會有甚麼變化？試用食物鏈解釋你的發現。</p></div>
+      </section>
+    </main>
+    <footer>🍀 森之平衡 · 小學科學互動學習 · 示意模型不代表真實生態系統預測</footer>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
