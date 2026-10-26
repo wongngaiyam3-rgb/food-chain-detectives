@@ -26,7 +26,7 @@ function refreshNearby(active){
   $('#nearbyDetail').onclick=()=>observe(id);card.classList.remove('hidden');
  }
 }
-function showJournal(f=filter){start();filter=f;const list=species.filter(s=>f==='全部'||(f==='已發現'?discovered.has(s.id):f==='生產者'?s.role==='生產者':s.role==='消費者'));panel(`<div class="eyebrow">FIELD JOURNAL · 森林觀察筆記</div><h2>每個生命，都值得認識。</h2><p class="sub">已相遇 ${discovered.size} / ${species.length} 種生物。走近生物即可自動記錄；未發現的生物可以使用線索尋找。</p><div class="filter-tabs">${['全部','已發現','生產者','消費者'].map(f=>`<button data-filter="${f}" class="${filter===f?'selected':''}">${f}</button>`).join('')}</div><div class="grid">${list.map(s=>`<button class="bio-card ${discovered.has(s.id)?'':'locked'}" data-id="${s.id}"><span class="emoji">${s.emoji}</span><b>${s.name}</b><small>${discovered.has(s.id)?s.diet+' · 已發現':'尚未發現 · 查看線索'}</small></button>`).join('')}</div><div class="tiny">示意場景參考溫帶林地及林緣生物；不是香港或特定地區的物種調查。</div>`,'journal');document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>showJournal(b.dataset.filter));document.querySelectorAll('.bio-card').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(discovered.has(id))observe(id);else{const s=byId[id];panel(`<div class="eyebrow">下一位森林鄰居</div><h2>${s.emoji} 尋找${s.name}</h2><p class="sub">${s.hint}</p><div class="hint">走近觀察點後，食性會自動顯示並加入圖鑑。你也可以自行走動尋找。</div><div class="actions"><button class="primary" id="visit">前往附近 →</button><button class="secondary" id="journalBack">返回圖鑑</button></div>`,'journal');$('#visit').onclick=()=>{teleport(s.pos[0],s.pos[1]+2.5);close();toast(`已到達${s.name}附近，自動顯示食性`)};$('#journalBack').onclick=()=>showJournal()}})}
+function showJournal(f=filter){start();filter=f;const list=species.filter(s=>f==='全部'||(f==='已發現'?discovered.has(s.id):f==='生產者'?s.role==='生產者':s.role==='消費者'));panel(`<div class="eyebrow">FIELD JOURNAL · 森林觀察筆記</div><h2>每個生命，都值得認識。</h2><p class="sub">已相遇 ${discovered.size} / ${species.length} 種生物。走近生物即可自動記錄；未發現的生物可以使用線索尋找。</p><div class="filter-tabs">${['全部','已發現','生產者','消費者'].map(f=>`<button data-filter="${f}" class="${filter===f?'selected':''}">${f}</button>`).join('')}</div><div class="grid">${list.map(s=>`<button class="bio-card ${discovered.has(s.id)?'':'locked'}" data-id="${s.id}"><span class="emoji">${s.emoji}</span><b>${s.name}</b><small>${discovered.has(s.id)?s.diet+' · 已發現':'尚未發現 · 查看線索'}</small></button>`).join('')}</div><div class="tiny">示意場景參考溫帶林地及林緣生物；不是香港或特定地區的物種調查。</div>`,'journal');document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>showJournal(b.dataset.filter));document.querySelectorAll('.bio-card').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(discovered.has(id))observe(id);else{const s=byId[id];panel(`<div class="eyebrow">下一位森林鄰居</div><h2>${s.emoji} 尋找${s.name}</h2><p class="sub">${s.hint}</p><div class="hint">走近觀察點後，食性會自動顯示並加入圖鑑。你也可以自行走動尋找。</div><div class="actions"><button class="primary" id="visit">前往附近 →</button><button class="secondary" id="journalBack">返回圖鑑</button></div>`,'journal');$('#visit').onclick=()=>{const tracked=models.find(m=>m.id===s.id);teleport(tracked?tracked.g.position.x:s.pos[0],(tracked?tracked.g.position.z:s.pos[1])+2.2);close();toast(`已到達${s.name}附近，自動顯示食性`)};$('#journalBack').onclick=()=>showJournal()}})}
 function showChain(){start();panel(`<div class="eyebrow">CONNECT THE FOREST · 連結生命</div><h2>你的發現，藏著甚麼關係？</h2><div class="filter-tabs"><button id="chainMode" class="${mode==='chain'?'selected':''}">取食食物鏈</button><button id="webMode" class="${mode==='web'?'selected':''}">我的食物網</button></div><div id="chainBody"></div>`,'chain');$('#chainMode').onclick=()=>{mode='chain';showChain()};$('#webMode').onclick=()=>{mode='web';showChain()};renderChain()}
 function renderChain(){if(mode==='web'){const unique=new Map();chains.forEach(c=>c.slice(0,-1).forEach((id,i)=>unique.set(id+'-'+c[i+1],[id,c[i+1]])));$('#chainBody').innerHTML=`<p class="sub">你已建立 ${chains.length} 條食物鏈，發現 ${unique.size} 個不同取食連結。重複出現的生物，把各條鏈連成食物網。</p>${unique.size?`<div class="grid">${[...unique.values()].map(e=>`<div class="fact"><b>${byId[e[0]].emoji} ${byId[e[0]].name}<br>↓<br>${byId[e[1]].emoji} ${byId[e[1]].name}</b></div>`).join('')}</div>`:'<div class="hint">先建立一條食物鏈，這裡就會出現你的連結紀錄。</div>'}<h3>已完成的食物鏈</h3>${chains.map(c=>`<div class="saved-chain">${c.map(id=>byId[id].emoji+' '+byId[id].name).join(' → ')}</div>`).join('')}<p class="tiny">這些是你目前發現的部分關係，並非森林裡的全部連結。</p>`;return}
 const available=species.filter(s=>discovered.has(s.id));$('#chainBody').innerHTML=`<p class="sub">從生產者開始，依次點選至少三張卡片。箭嘴表示：<b>食物 → 吃它的生物</b>。</p><div class="chain-slots">${selection.length?selection.map((id,i)=>`${i?'<span class="arrow">→</span>':''}<div class="chain-node"><span>${byId[id].emoji}</span>${byId[id].name}</div>`).join(''):'<span class="empty-chain">☀ 陽光提供能量。先放入一種植物吧。</span>'}</div><div class="actions"><button id="check" class="primary">檢查並記錄 →</button><button id="undo" class="secondary">退回一步</button><button id="clearChain" class="secondary">清空</button></div><div id="feedback" role="status"></div><h3 style="font-size:14px;margin-top:25px">從你的圖鑑選擇</h3><div class="pick-list">${available.map(s=>`<button data-pick="${s.id}" ${selection.includes(s.id)?'disabled':''}>${s.emoji} ${s.name}</button>`).join('')}</div>${available.length<3?'<div class="hint">先到森林觀察更多生物。可以試著尋找「禾草、蚱蜢、青蛙、草蛇」。</div>':''}<p class="tiny">雜食動物可能出現在不同營養階層。食物網中的合理循環不適合這個簡化的單鏈活動，因此每條鏈中的生物不重複。</p><button class="secondary" id="moreSpecies">繼續找生物 ↗</button>`;
@@ -246,6 +246,84 @@ function grasshopper(g){
  }
  for(let j=0;j<5;j++)plush('#609249',0,.26,-.04+j*.14,.155,.09,.022,g);
 }
+
+const ANIMAL_MOTION={
+ rabbit:{speed:.78,range:2.05},fox:{speed:.65,range:2.65},
+ mouse:{speed:.65,range:1.85},robin:{speed:.72,range:2.1},
+ frog:{speed:.55,range:1.6},snake:{speed:.43,range:2},
+ caterpillar:{speed:.16,range:.95},grasshopper:{speed:.86,range:1.55},
+ squirrel:{speed:1.12,range:2.1},snail:{speed:.11,range:1.15},
+ owl:{speed:.73,range:2.6}
+};
+/** Select an achievable nearby waypoint without walking through large tree trunks or water. */
+function chooseAnimalGoal(m){
+ const ai=m.ai;
+ for(let n=0;n<16;n++){
+  const a=rand()*Math.PI*2,r=Math.sqrt(rand())*ai.range;
+  const x=m.base.x+Math.cos(a)*r,z=m.base.z+Math.sin(a)*r;
+  if(x < -13.5||x>13.5||z < -11.5||z>17.5)continue;
+  if(colliders.some(c=>Math.hypot(x-c.x,z-c.z)<c.r+.32))continue;
+  ai.goal={x,z};return;
+ }
+ ai.goal=null;ai.rest=1+rand()*2;
+}
+function moveForestAnimals(dt,t){
+ for(const m of models){
+  if(!m.ai)continue;
+  const ai=m.ai,kind=m.id;
+  let moving=false;
+  if(ai.rest>0){
+   ai.rest=Math.max(0,ai.rest-dt);
+  }else{
+   if(!ai.goal)chooseAnimalGoal(m);
+   if(ai.goal){
+    const dx=ai.goal.x-m.g.position.x,dz=ai.goal.z-m.g.position.z;
+    const distance=Math.hypot(dx,dz);
+    if(distance < .11){
+     ai.goal=null;ai.rest=.55+rand()*(kind==='snail'?.8:2.5);
+    }else{
+     const vx=dx/distance,vz=dz/distance;
+     const amount=Math.min(distance,ai.speed*dt);
+     const newX=m.g.position.x+vx*amount,newZ=m.g.position.z+vz*amount;
+     if(colliders.some(c=>Math.hypot(newX-c.x,newZ-c.z)<c.r+.18)){
+      ai.goal=null;ai.rest=.2+rand()*.8;
+     }else{
+      m.g.position.x=newX;
+      m.g.position.z=newZ;
+      const desired=Math.atan2(-vx,-vz);
+      const diff=Math.atan2(Math.sin(desired-ai.heading),Math.cos(desired-ai.heading));
+      ai.heading+=diff*Math.min(1,dt*4.5);
+      m.g.rotation.y=ai.heading;
+      moving=true;
+     }
+    }
+   }
+  }
+  const stride=t*(kind==='snail'?2:kind==='caterpillar'?4:8)+m.phase;
+  const activity=moving?1:.15;
+  if(kind==='rabbit')m.g.position.y=m.base.y+Math.max(0,Math.sin(stride*.75))*.15*activity;
+  else if(kind==='frog')m.g.position.y=m.base.y+Math.pow(Math.max(0,Math.sin(stride*.58)),1.6)*.36*activity;
+  else if(kind==='grasshopper')m.g.position.y=m.base.y+Math.pow(Math.max(0,Math.sin(stride*.77)),2)*.37*activity;
+  else if(kind==='robin')m.g.position.y=m.base.y+Math.max(0,Math.sin(stride*.7))*.16*activity;
+  else if(kind==='owl')m.g.position.y=m.base.y+Math.sin(t*2.7+m.phase)*.2;
+  else if(kind==='squirrel')m.g.position.y=m.base.y+Math.abs(Math.sin(stride*.62))*.065*activity;
+  else if(kind==='mouse'||kind==='fox')m.g.position.y=m.base.y+Math.abs(Math.sin(stride*.75))*.045*activity;
+  else if(kind==='caterpillar')m.g.position.y=m.base.y+Math.sin(stride*.5)*.03*activity;
+  else m.g.position.y=m.base.y+Math.sin(stride*.2)*.014;
+  m.g.rotation.z=kind==='snake'?Math.sin(t*4+m.phase)*.05:
+    kind==='snail'?Math.sin(t*.8+m.phase)*.024:0;
+  if(m.g.userData.tail){
+    m.g.userData.tail.rotation.y=Math.sin(t*3.1+m.phase)*(kind==='squirrel'?.22:.18);
+    m.g.userData.tail.rotation.x=Math.sin(t*2+m.phase)*.07;
+  }
+  if(m.g.userData.wings){
+   m.g.userData.wings.forEach(({wing,side})=>{
+    wing.rotation.z=side*(.26+Math.sin(t*5.5+m.phase)*.65);
+    wing.rotation.x=side*Math.sin(t*5.5+m.phase)*.15;
+   });
+  }
+ }
+}
 function model(s){
  const g=new THREE.Group();
  g.position.set(s.pos[0],0,s.pos[1]);
@@ -315,5 +393,5 @@ function bindWorld(){const canvas=renderer.domElement;canvas.addEventListener('p
 const joystick=$('#joystick');joystick.addEventListener('pointerdown',e=>{if(panelType)return;joystick.setPointerCapture(e.pointerId);moveJoy(e)});joystick.addEventListener('pointermove',e=>{if(joystick.hasPointerCapture(e.pointerId))moveJoy(e)});function moveJoy(e){const r=joystick.getBoundingClientRect();let x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),len=Math.hypot(x,y),max=r.width*.3;if(len>max){x=x/len*max;y=y/len*max}joy={x:x/max,y:y/max};$('#stick').style.transform=`translate(${x}px,${y}px)`}for(const event of ['pointerup','pointercancel','lostpointercapture'])joystick.addEventListener(event,()=>{joy={x:0,y:0};$('#stick').style.transform=''});document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[e.key.toLowerCase()]=true;if(e.key==='Escape'){close();start()}});document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);window.addEventListener('blur',()=>{keys={};joy={x:0,y:0};viewDrag=null;$('#stick').style.transform=''});document.addEventListener('visibilitychange',()=>{if(document.hidden){keys={};joy={x:0,y:0};viewDrag=null}});
 window.addEventListener('resize',()=>{if(!renderer)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 const p=new THREE.Vector3(),target=new THREE.Vector3(),desired=new THREE.Vector3();function animate(){requestAnimationFrame(animate);if(document.hidden){clock.getDelta();return}const dt=Math.min(clock.getDelta(),.04);last+=dt;const active=!panelType&&$('#welcome').classList.contains('hidden');if(active){let dx=joy.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dz=joy.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);const len=Math.hypot(dx,dz);if(len>.08){if(len>1){dx/=len;dz/=len}const vx=dx*Math.cos(angle)+dz*Math.sin(angle),vz=-dx*Math.sin(angle)+dz*Math.cos(angle);let nx=Math.max(-14,Math.min(14,player.position.x+vx*dt*3.7)),nz=Math.max(-12,Math.min(18,player.position.z+vz*dt*3.7));if(!colliders.some(c=>Math.hypot(nx-c.x,nz-c.z)<c.r+.25)){player.position.x=nx;player.position.z=nz}player.rotation.y=Math.atan2(vx,vz)+Math.PI;player.position.y=Math.abs(Math.sin(last*9))*.045}else player.position.y=0;}
-target.copy(player.position);target.y=1;desired.set(player.position.x+Math.sin(angle)*10,7,player.position.z+Math.cos(angle)*10);camera.position.lerp(desired,1-Math.exp(-dt*5));camera.lookAt(target);models.forEach(m=>{if(['rabbit','mouse','fox'].includes(m.id)){m.g.position.x=m.base.x+Math.sin(last*.3+m.phase)*.5;m.g.rotation.y=Math.sin(last*.3+m.phase)*.35;m.g.position.y=Math.abs(Math.sin(last*2+m.phase))*.035}if(m.id==='robin')m.g.rotation.y=Math.sin(last*.5)*.6;if(m.id==='grasshopper')m.g.position.y=Math.max(0,Math.sin(last*1.8))* .3;if(m.id==='frog')m.g.position.y=Math.max(0,Math.sin(last*1.3+m.phase))*.15;if(m.id==='snake')m.g.rotation.y=Math.sin(last*.7+m.phase)*.38;});camera.updateMatrixWorld();if(!active||last-lastProximity>.12){refreshNearby(active);lastProximity=last}labels.forEach(l=>{p.copy(l.g.position);p.y+=l.height;p.project(camera);const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;const rect=$('.mission').getBoundingClientRect();const underMission=x>rect.left-45&&x<rect.right+45&&y>rect.top-10&&y<rect.bottom+25;const visible=!underMission&&p.z<1&&p.z>-1&&x>10&&x<innerWidth-10&&y>115&&y<innerHeight-75;l.el.style.display=visible?'flex':'none';if(visible){l.el.style.left=x+'px';l.el.style.top=y+'px';l.el.style.zIndex=Math.round((1-p.z)*100)}});renderer.render(scene,camera)}
+target.copy(player.position);target.y=1;desired.set(player.position.x+Math.sin(angle)*10,7,player.position.z+Math.cos(angle)*10);camera.position.lerp(desired,1-Math.exp(-dt*5));camera.lookAt(target);moveForestAnimals(dt,last);camera.updateMatrixWorld();if(!active||last-lastProximity>.12){refreshNearby(active);lastProximity=last}labels.forEach(l=>{p.copy(l.g.position);p.y+=l.height;p.project(camera);const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;const rect=$('.mission').getBoundingClientRect();const underMission=x>rect.left-45&&x<rect.right+45&&y>rect.top-10&&y<rect.bottom+25;const visible=!underMission&&p.z<1&&p.z>-1&&x>10&&x<innerWidth-10&&y>115&&y<innerHeight-75;l.el.style.display=visible?'flex':'none';if(visible){l.el.style.left=x+'px';l.el.style.top=y+'px';l.el.style.zIndex=Math.round((1-p.z)*100)}});renderer.render(scene,camera)}
 update();try{init()}catch(e){console.error(e);$('#welcome').classList.add('hidden');$('#error').classList.remove('hidden')}
