@@ -246,8 +246,51 @@ function grasshopper(g){
  }
  for(let j=0;j<5;j++)plush('#609249',0,.26,-.04+j*.14,.155,.09,.022,g);
 }
-function model(s){const g=new THREE.Group();g.position.set(s.pos[0],0,s.pos[1]);scene.add(g);switch(s.id){case 'oak':tree(...s.pos,1.3,true);break;case 'grass':for(let i=0;i<24;i++){const x=(rand()-.5)*1.4,z=(rand()-.5)*1.4;mesh(new THREE.ConeGeometry(.07,.35+rand()*.4,3),'#749953',x,.22,z,g)}break;case 'frog':frog(g);break;case 'snake':snake(g);break;case 'rabbit':rabbit(g);break;case 'fox':fox(g);break;case 'mouse':mouse(g);g.scale.setScalar(1.4);break;case 'robin':bird(g);g.position.y=.3;g.scale.setScalar(1.3);break;case 'owl':cylinder('#70634e',0,1,0,.23,2,g);bird(g,true);g.children.slice(1).forEach(m=>m.position.y+=2);break;case 'caterpillar':for(let i=0;i<6;i++)sphere(i===0?'#9cb75c':'#7ca055',0,.2,-i*.14,.14,.15,.14,g);for(let x of [-.06,.06])sphere('#293c27',x,.25,-.1,.025,.025,.025,g);g.scale.setScalar(1.6);break;case 'grasshopper':sphere('#6c9246',0,.24,0,.13,.15,.4,g);sphere('#94ad56',0,.4,-.3,.14,.16,.14,g);for(let x of [-1,1]){let leg=cylinder('#63853e',x*.22,.25,.15,.025,.55,g);leg.rotation.z=x*.9;cylinder('#76954c',x*.11,.58,-.3,.012,.35,g)}g.scale.setScalar(1.7);break;}
-models.push({id:s.id,g,base:g.position.clone(),phase:rand()*6});const el=document.createElement('button');el.className='species-label';el.innerHTML=`<span class="dot" style="background:${s.role==='生產者'?'#77a25a':'#bc9559'}"></span>${s.name} <span style="opacity:.5">＋</span>`;el.setAttribute('aria-label',`觀察${s.name}`);el.onclick=()=>observe(s.id);$('#labels').append(el);labels.push({el,id:s.id,g,height:s.id==='oak'?4.8:s.id==='frog'?1.55:s.id==='snake'?1.35:1.6});}
+function model(s){
+ const g=new THREE.Group();
+ g.position.set(s.pos[0],0,s.pos[1]);
+ scene.add(g);
+ switch(s.id){
+  case 'oak':tree(...s.pos,1.3,true);break;
+  case 'grass':{
+   for(let i=0;i<30;i++){
+    const x=(rand()-.5)*1.45,z=(rand()-.5)*1.45;
+    const blade=mesh(new THREE.ConeGeometry(.062,.34+rand()*.5,5),i%3?'#83ad57':'#b3c878',x,.25,z,g);
+    blade.rotation.z=(rand()-.5)*.3;
+   }break;
+  }
+  case 'rabbit':rabbit(g);break;
+  case 'fox':fox(g);break;
+  case 'mouse':mouse(g);g.scale.setScalar(1.20);break;
+  case 'robin':robin(g);g.scale.setScalar(1.2);g.position.y=.27;break;
+  case 'frog':frog(g);g.scale.setScalar(1.13);break;
+  case 'snake':snake(g);g.scale.setScalar(1.05);break;
+  case 'caterpillar':caterpillar(g);g.scale.setScalar(1.30);break;
+  case 'grasshopper':grasshopper(g);g.scale.setScalar(1.30);break;
+  case 'squirrel':squirrel(g);g.scale.setScalar(1.12);break;
+  case 'snail':snail(g);g.scale.setScalar(1.2);break;
+  case 'owl':owl(g);g.scale.setScalar(1.05);g.position.y=2.5;break;
+ }
+ const moving=s.role==='消費者';
+ const config=ANIMAL_MOTION[s.id];
+ const creature={
+  id:s.id,g,base:g.position.clone(),phase:rand()*Math.PI*2,
+  ai:moving?{
+   range:config.range,speed:config.speed,rest:1+rand()*3,goal:null,
+   motion:0,heading:rand()*Math.PI*2
+  }:null
+ };
+ models.push(creature);
+ const el=document.createElement('button');
+ el.className='species-label';
+ el.innerHTML=`<span class="dot" style="background:#bc9559"></span>undefined <span style="opacity:.5">＋</span>`;
+ el.setAttribute('aria-label',`觀察undefined`);
+ el.onclick=()=>observe(s.id);
+ $('#labels').append(el);
+ const height=s.id==='oak'?4.8:s.id==='grass'?1.5:s.id==='owl'?1.5:
+              s.id==='fox'?1.8:s.id==='squirrel'?1.7:s.id==='rabbit'?1.7:1.2;
+ labels.push({el,id:s.id,g,height});
+}
 function softwareRenderer(){
  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');let w=innerWidth,h=innerHeight;const proj=(x,y,z)=>{const v=new THREE.Vector3(x,y,z).project(camera);return {x:(v.x*.5+.5)*w,y:(-v.y*.5+.5)*h,z:v.z}};
  const ellipse=(x,y,rx,ry,color)=>{ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,Math.max(0,rx),Math.max(0,ry),0,0,Math.PI*2);ctx.fill()};
